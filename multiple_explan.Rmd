@@ -68,3 +68,68 @@ question("What do you think are some of the challenges that arise from the origi
 )
 ```
 
+## Ways to randomise your treatments
+### Fully randomised design
+There are several methods of creating multiple replicates of your experimental 
+units and randomising the allocation of treatments to them. To give you some
+examples:
+
+1. You might want to investigate the effect of a new antibiotic on bacterial growth.
+
+![](www/bacteria_on_petri.jpeg)
+     
+   + Your **experimental units** could be Petri-dishes on which you grow bacteria.
+   + Your **response variable** is bacterial growth
+   + Your **explanatory variable** has is a categorical 'factor': no antibiotic, your new antibiotic
+
+2. You are interested in the effects of _Rhinanthus minor_ on species diversity
+in grasslands. _Rhinanthus_ is a parasite of grasses, and therefore reduces their
+vigour. This allows other species of wildflower to colonise the grassland.
+![](www/rhinanthus_minor.jpeg)
+     + Your **experimental units** could be different plots in a meadow, each 10 x 10 m
+     + Your **response variable** is the overall diversity of wildflowers
+     + Your **explanatory variable** is a factor with two categories: a control, and plots with
+_Rhinanthus_ seed growing
+
+You can probably think of other studies where you have explanatory variables with
+3, 4 or more categorical levels in them.
+
+You decide to create a simple fully randomised design experiment, with 5 replicates
+for each of your two treatments. So for the antibiotic experiment, you have 5 Petri
+dishes without antibiotic (control), and 5 with your new antibiotic, and you put
+these onto a plastic tray in the incubator.  For the _Rhinanthus_ experiment you
+have 5 plots in your field without any _Rhinanthus_ seed added (control), and 5
+with the seed. You toss a coin to allocate treatments to Petri dishes or plots,
+and end up with the following design.
+
+![](www/fully_randomised.png)
+
+```{r fully_randomised, echo=FALSE}
+question("What do you think is the problem with this design; A is your control
+         (no antibiotic, or no Rhinanthus) and B treatment (antibiotic or 
+         Rhinanthus)",
+  answer("There are not enough replicates", message = "Although replication is
+         low, it might be sufficient, especially if you have done pilot studies"),
+  answer("There are only two treatment levels in the explanatory variable. You 
+         need at least three, e.g. different concentrations of antibiotic, or
+         different seed sowing rates", message = "Only 2 levels in your explanatory
+         variable is sufficient"),
+  answer("Most of the control Petri-dishes or plots are at one end of the tray
+         or field respectively", correct = TRUE, message = "Good. This may bias
+         your results"),
+  allow_retry = TRUE
+  )
+```
+
+Think back to the Palace Leas experiment, which was on a slope. Even if it had
+originally been created as a fully randomised experiment, it would not be ideal
+if most of the plots for one of the fertiliser treatments plots had ended up,
+purely by chance, by the road or by the stream. Likewise, temperatures in an
+incubator are less stable near the door than at the back of an incubator. If most
+of your Petri-dishes for the antibiotic were, purely by chance, near the door
+then that might bias your results.
+
+Of course you could eventually get round this problem by greatly increasing the
+number of replicates. But that would be expensive and time-consuming. Instead
+you can slightly change how you set up your experiment, so that it is more robust,
+yet use no more resources.
