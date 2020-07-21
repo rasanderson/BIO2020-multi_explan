@@ -133,3 +133,68 @@ Of course you could eventually get round this problem by greatly increasing the
 number of replicates. But that would be expensive and time-consuming. Instead
 you can slightly change how you set up your experiment, so that it is more robust,
 yet use no more resources.
+
+## Blocking
+### Introduction
+Sub-dividing your experimental 'space' into 'blocks' can often improve the power
+of your experiments, without the need for any additional time, replicates or
+resources. Take a look at the following diagram, which represents the same
+experiment as before, i.e. the units are Petri dishes arranged on an incubator
+tray with/without antibiotic, or field plots with/without _Rhinanthus_ seed.
+
+![](www/randomised_block.png)
+
+The experiment is now arranged as having 5 'blocks' from left-to-right. Within
+each block there are 2 replicates for each treatment, but their arrangement
+within these blocks is completely random.
+
+### How does blocking help?
+Imagine the left-hand side of the grid in the diagram above is next to the door
+of the incubator, or farm track in the field experiment. Hopefully you can see
+both treatments occur close to the door, or farm track, and both treatments are
+also preset at the back of the incubator or a long way from the farm-track at
+the right-hand side of the grid. This didn't happen in the earlier fully
+randomised design, so is an immediate improvement.
+
+This improved design also increases your ability to detect whether your treatments
+are actually doing anything. In a linear model, your overall pattern is:
+
+$$\text{Response} = \text{Explanatory variable} + Error$$
+where in these examples you have
+
+$$\text{Response} = \text{Explanatory variable} + Error$$
+where the $Error$ is the unknown variation or 'noise' in your data. In these 2
+examples you have
+$$\text{Bacterial growth} = \text{control/antibiotic} + Error$$
+and
+$$\text{Wildflower diversity} = \text{control/Rhinanthus} + Error$$
+Remember that you have two columns, one with your response variable, and one with
+your explanatory variable, with each row of the latter categorised into which 
+treatment 'level' is applied.
+
+The overall importance of your explanatory variable is determined by the amount
+of variation it explains relative to the amount of unknown $Error$ variation. Recall
+that the F-value in an ANOVA table is based on the ratio of mean squares (variances)
+in your explanatory variable : error. **Key points** arising from this are:
+
+* If the $Error$ is large it is going to be harder to detect an effect from your
+explanatory variable
+* The $Error$ might be increased due to changes across your experimental units,
+for example whether your Petri dishes are near the incubator door, or your field
+plots are near the road
+* If you explicitly account for this systematic variation across your experiment,
+you can **reduce** the $Error$ and **increase** your ability to detect an effect
+from your explanatory variables.
+
+So, you can replace your original linear model:
+
+$$\text{Response} = \text{Explanatory variable} + Error$$
+with this one:
+
+$$\text{Response} = \text{Explanatory variable} + \text{Block} + Error$$
+In the second linear model the $Error$ will be smaller, as some of the variation
+is accounted for by Block. As a result, you are more likely to find an effect
+from the explanatory variable.
+
+**Add a revision question**
+
