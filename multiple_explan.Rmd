@@ -7,6 +7,8 @@ runtime: shiny_prerendered
 ```{r setup, include=FALSE}
 library(learnr)
 library(mosaic)
+library(tidyr)
+plant_growth <- read.csv("www/plant_growth.csv")
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -198,3 +200,128 @@ from the explanatory variable.
 
 **Add a revision question**
 
+## Worked example of randomised blocks
+Here is a simple experiment to investigate the effects of nitrogen (N) and
+phosphorous (P) on plant biomass. There are four blocks, and also an untreated
+control. The following exercise contains the results in a data.frame called
+`plant_growth`, read in as a 4 row (blocks) by 4 column (block, control, N, P).
+Create two boxplots, one showing the differences in biomass according to treatment.
+
+**Hints**:
+* re-arrange the data so that they are in a 3 column table called `plant_growth_lng`
+using the `pivot_longer()` function.
+* Use the `gf_boxplot()` function to create the plot.
+
+```{r biomass_boxplot, exercise=TRUE, exercise.setup = "biomass_rawread"}
+
+```
+```{r biomass_boxplot-solution}
+plant_growth_lng <- pivot_longer(plant_growth,
+                                 cols = Control:P,
+                                 names_to = "fertiliser",
+                                 values_to = "biomass")
+
+gf_boxplot(biomass ~ fertiliser, data=plant_growth_lng)
+```
+
+Before we go any further, do a quick `summary` of the data in your `plant_growth_lng`
+dataset.
+
+```{r coding_of_blocks, echo=FALSE}
+question("What additional change is needed before you can analyse the data with
+         a linear model?",
+  answer("The blocks need to be recoded A to D", message = "Not essential, although
+         if they had originally been coded as A to D rather than 1 to 4 this extra
+         step would not be needed"),
+  answer("The biomass values need to have units", message = "R can undertake the
+         calculations without the need for units, but when displayed in a graph
+         it is good practice to show the units"),
+  answer("The rows need to be re-ordered to match their arrangement in the
+         field", message = "No, you would only need to do this if you had large
+         amounts of data and wanted to do a very complex spatial analysis."),
+  answer("The summary() function gave min,mean,max values for the blocks. This
+         suggests they are not being read by R as categorical", correct = TRUE,
+         message = "R has interpreted the blocks as a continuous explanatory
+         variable, whereas it should be categorical."),
+  allow_retry = TRUE
+  )
+```
+
+In the following exercise do the following with the `plant_growth_lng` dataset:
+
+* recode the `block` variable to be categorical. **Hint**: use `as.factor()` function;
+Use the `summary()` function before and after re-coding to check the differnce
+* create a linear model `plant_growth_lm1` with only fertiliser as the explanatory
+variable
+* create a linear model `plant_growth_lm2` with both fertiliser and block as
+explanatory variables
+* compare the Anova tables for each model
+
+```{r biomass_lm_setup}
+plant_growth_lng <- pivot_longer(plant_growth,
+                                 cols = Control:P,
+                                 names_to = "fertiliser",
+                                 values_to = "biomass")
+rm(plant_growth)
+```
+```{r biomass_lm, exercise=TRUE, exercise.setup = "biomass_lm_setup"}
+
+```
+```{r biomass_lm-solution}
+# summary() function shows R mis-interprets block as continuous
+summary(plant_growth_lng)
+
+# Use the as.factor() function to ensure R recognises block as categorical
+plant_growth_lng$block <- as.factor(plant_growth_lng$block)
+summary(plant_growth_lng)
+
+# Create your two linear models
+plant_growth_lm1 <- lm(biomass ~ fertiliser, data=plant_growth_lng)
+plant_growth_lm2 <- lm(biomass ~ fertiliser + block, data=plant_growth_lng)
+
+# Check their ANOVA tables
+anova(plant_growth_lm1)
+anova(plant_growth_lm2)
+```
+
+Look at the output from the two `summary()` functions (use the Solution button
+if you get stuck) and note how R codes the blocks correctly after using `as.factor()`.
+The `$` symbol allows you to reference an individual column by name in R.
+
+Study the two ANOVA tables.
+```{r compare_anova_tables, echo=FALSE}
+question("Which of the following statements about the ANOVA tables are true? (select ALL that apply)",
+  answer("The variance for fertiliser is the same in both tables", correct = TRUE),
+  answer("There is no replication"),
+  answer("The residual sums of squares in the first ANOVA = the residual SS + 
+         block SS in the second ANOVA", correct = TRUE),
+  answer("The total degrees of freedom in both tables is the same", correct = TRUE),
+  answer("There is a significant change in the biomass depending on the position
+         in the field where the experiment is undertaken", correct = TRUE),
+  answer("The F-value is higher for the fertiliser treatment when blocks are used
+         because the residual variance is smaller", correct =TRUE)
+)
+```
+
+### Other examples of where blocks might be used
+There are lots of other ways in which you can use blocks to improve your experiment
+Examples might include:
+
+* If an experimental unit is an individual plant or animal, group (block) your units 
+according to their initial weight
+* Birds might be blocked according to initial size, or initial egg batch, or
+laying date
+* Nesting sites might be blocked according to distance from urban areas
+* Glasshouse plants might be blocked according to light intensity in different
+parts of the glasshouse
+
+Some of these 'blocking' variables are on continuous scales, such as distance
+or light intensity. You can sub-divide a continuous scale into discrete categories
+to help you block experiments if you want to eliminate that variable from your
+experiment.
+
+It is possible to block with 2 (or more) variables to get rid of the effect of
+multiple unwanted variables. These are referred to as _Latin square_ designs
+for 2 variables, or _Latin hypercubes_ when there are lots of variables. Given
+the Star Trek/Star Wars name of the latter, you'll be glad we won't go into them
+in this module.
