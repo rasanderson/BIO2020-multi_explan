@@ -11,6 +11,7 @@ library(tidyr)
 library(magrittr)
 plant_growth <- read.csv("www/plant_growth.csv")
 lolium <- read.csv("www/grass_growth.csv")
+plasma <- read.csv("www/plasma.csv")
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -210,13 +211,21 @@ control. The following exercise contains the results in a data.frame called
 Create two boxplots, one showing the differences in biomass according to treatment.
 
 **Hints**:
+
 * re-arrange the data so that they are in a 3 column table called `plant_growth_lng`
 using the `pivot_longer()` function.
 * Use the `gf_boxplot()` function to create the plot.
 
-```{r biomass_boxplot, exercise=TRUE, exercise.setup = "biomass_rawread"}
+```{r biomass_boxplot-setup}
+# Avoid confusing with other data.frames
+rm(lolium)
+rm(plasma)
+```
+
+```{r biomass_boxplot, exercise=TRUE}
 
 ```
+
 ```{r biomass_boxplot-solution}
 plant_growth_lng <- pivot_longer(plant_growth,
                                  cols = Control:P,
@@ -362,6 +371,7 @@ focus on the first (Residuals vs Fitted) and second (QQ plot)
 
 ```{r lolium_straight_line-setup}
 rm(plant_growth)
+rm(plasma)
 ```
 ```{r lolium_straight_line, exercise = TRUE, exercise.lines=15}
 
@@ -467,4 +477,98 @@ or monthly data (divide by 12.month number)
 
 **Decide whether to expand with a worked example. Possibly omit for Stage 2 students**
 
+## Interactions between explanatory variables
+### Interactions
+When you have multiple explanatory variables they may not always be independent
+of each other, and they 'interact' in some way. This means that the effect of one
+explanatory variable on the response also depends on the value of the other
+explanatory variable. These interactions can arise when all your explanatory
+variables are categorical, when they are all continuous, or where you have a
+mixture of categorical and continuous explanatory variables.
 
+### Example with categorical explanatories
+The amount of calcium in blood plasma samples (mg / 100 ml) was measured in
+male and female rabbits, half sampled from a lowland intensive arable farm, and
+half from an upland mixed farm.
+
+![](www/rabbit.jpeg)
+As usual it is useful to plot the data before analysing them. As we have 
+categorical variables, a boxplot is informative, but we can easily colour code
+the boxes two show all four combinations in one plot:
+
+```{r plasma_boxplot, echo=TRUE}
+gf_boxplot(calcium ~ site, color= ~ sex, data=plasma)
+```
+
+**Key points**
+
+* Use the `colour= ~sex` option in `gf_boxplot()` to arrange the colour-coding.
+* You could easily put gender on the x-axis, and colour-code by lowland/upland
+* Calcium levels appear to be lower in males than females
+* The difference between males and females appears to be bigger at lowland
+than upland sites
+
+It is that last point that is critical. Indeed, if you were to a draw line
+connecting the two boxplots for the males and a second line connecting the two
+boxplots for the females, the gradients of those lines would not be parrallel.
+This suggests non-independence, i.e. an **interaction** is present.
+
+## How to test for an interaction
+It is easy to test whether an interaction occurs, by adding a third explanatory
+variable. Your original model is:
+
+$$Response = Explanatory1 + Explanatory2 + Error$$
+which is modified to:
+$$Response = Explanatory1 + Explanatory2 + Interaction + Error$$
+For this rabbit example, the latter is therefore:
+$$calcium = site + sex + site\ sex\ interaction + Error$$
+This can easily be entered into the `lm` function, using the `:` operator to
+define the interaction term. Put the interaction term last.
+
+```{r plasma_lm_interaction, echo=TRUE}
+calcium_lm <- lm(calcium ~ site + sex + site:sex, data=plasma)
+anova(calcium_lm)
+```
+
+You can see from the ANOVA table indicates that:
+
+* the `site` main effect is **not significant** as P=8.985896e-01 = 0.896. There is **no difference** in the average calcium at the upland and lowland sites
+* the `sex` main effect **is significant** as P=0.000000000678 < 0.001. There is **more calcium** in the blood of females than males
+* the `site:sex` term **is significant** as P=0.00000356 <0.001. The amount of calcium depends on **both site and gender**
+
+That last bullet point might seem confusing at first. If `site` on its own is
+not significant, how can the interaction `site:sex` be significant? Let's look
+at the three components and plot them
+
+```{r separate_plots, echo=TRUE}
+# Main effect for site
+gf_boxplot(calcium ~ site, data=plasma)
+
+# Main effect for sex
+gf_boxplot(calcium ~ sex, data=plasma)
+
+# Show original data, and lines connecting the two sets of means
+gf_point(calcium ~ site, colour= ~sex, data=plasma) %>%
+  gf_line(calcium ~ site, colour= ~sex, group= ~sex, stat="summary", data=plasma)
+```
+
+**Key points**
+
+* The boxplots for site overlap considerably, hence non-significant `site` main
+effect
+* Boxplots for sex show little overlap, hence significant `sex` main effect
+* lines connecting the means for the two groups **are not parallel** hence
+significant interaction term
+
+### Should I drop the non-significant site main effect from the model?
+You might be wondering whether you should omit the `site` main effect and have a
+model that consists only of the `sex` main effext plus the `sex:site` interaction:
+
+$$calcium = sex + site\ sex\ interaction + Error$$
+There is not a consensus amongst statisticians on this issue, but I would advise
+retaining it **if the interaction is significant**. If you want to simplify a
+model down to its simplest form, **always look at the interaction term first**.
+If the interaction is non-significant, then you are justified in re-running the
+model without the interaction, and looking at the main effects. However, if the
+interaction is significant, I would recommend that you keep all the main effects,
+even ones, like `site`, that are non-significant.
