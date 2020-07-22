@@ -447,3 +447,24 @@ gf_point(growth ~ water, data = lolium) %>%
   gf_lm(formula = y ~ x + I(x^2))
 ```
 
+### Polynomial curve fitting: be cautious
+The type of linear model you have just fitted is often called a **quadratic**
+model, as it contains the original, and squared terms for predictors. There
+is nothing to stop you fitting `x^3`, or `x^4` terms to fit more and more 
+complex curves. However, be very cautious about fitting such general **polynomial**
+models, as the `x^3` or `x^4` terms are unlikely to have any biological meaning.
+
+### Handling regular patterns over time
+Sometimes you might have data that shows a regular rise and fall, e.g. temperature
+data recorded every hour over the course of several weeks. To analyse such data
+you might want to remove the daily cycle, so that you can study other effects.
+Using the sine and cosine of your explanatory variable (hour of day) can be an
+effective trick. Simply create a model of the form:
+
+$$temperature = sine(\frac{2 \pi}{24.hr})  + cosine(\frac{2\pi}{24.hr}) + Error$$
+Similar methods can be used if working with weekly data (divide by 52.week number)
+or monthly data (divide by 12.month number)
+
+**Decide whether to expand with a worked example. Possibly omit for Stage 2 students**
+
+
