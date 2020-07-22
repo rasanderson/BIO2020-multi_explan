@@ -1,5 +1,5 @@
 ---
-title: "Tutorial"
+title: "Multiple explanatories"
 output: learnr::tutorial
 runtime: shiny_prerendered
 ---
@@ -450,11 +450,13 @@ that the two models differ (F=70.48, P<0.001), with much lower residual sums of
 squares in the model containing water-squared.
 
 You can view the predicted line and see the improvement. Simply add the overall
-structure of your model (in `y ~ x + I(x^2)` syntax to the `gf_lm()` function:
+structure of your model (in `y ~ x + I(x^2)` syntax to the `gf_lm()` function.
+We have also used the `interval = "confidence"` option to add 95% confidence
+intervals around our fitted line:
 
 ```{r fitted_line, echo=TRUE}
 gf_point(growth ~ water, data = lolium) %>% 
-  gf_lm(formula = y ~ x + I(x^2))
+  gf_lm(formula = y ~ x + I(x^2), interval = "confidence")
 ```
 
 ### Polynomial curve fitting: be cautious
@@ -492,6 +494,7 @@ male and female rabbits, half sampled from a lowland intensive arable farm, and
 half from an upland mixed farm.
 
 ![](www/rabbit.jpeg)
+
 As usual it is useful to plot the data before analysing them. As we have 
 categorical variables, a boxplot is informative, but we can easily colour code
 the boxes two show all four combinations in one plot:
@@ -540,7 +543,7 @@ That last bullet point might seem confusing at first. If `site` on its own is
 not significant, how can the interaction `site:sex` be significant? Let's look
 at the three components and plot them
 
-```{r separate_plots, echo=TRUE}
+```{r separate_plots, echo=TRUE, warning=FALSE}
 # Main effect for site
 gf_boxplot(calcium ~ site, data=plasma)
 
