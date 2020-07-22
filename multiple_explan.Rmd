@@ -361,7 +361,8 @@ Go ahead and fit a standard linear model. Check its `summary` table, and also lo
 at the model diagnostics, in particular the QQ-plot, and how the model residuals
 change with predicted (fitted) growth rate.
 
-**Hints**: 
+**Hints**
+
 * The exercise contains a data.frame called `lolium` with two columns, `growth`
 and `water`.
 * Use the `lm()` function to create your model, and `summary()` to display
