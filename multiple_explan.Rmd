@@ -8,7 +8,9 @@ runtime: shiny_prerendered
 library(learnr)
 library(mosaic)
 library(tidyr)
+library(magrittr)
 plant_growth <- read.csv("www/plant_growth.csv")
+lolium <- read.csv("www/grass_growth.csv")
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -265,7 +267,7 @@ plant_growth_lng <- pivot_longer(plant_growth,
 rm(plant_growth)
 ```
 ```{r biomass_lm, exercise=TRUE, exercise.setup = "biomass_lm_setup"}
-
+rm(lolium)
 ```
 ```{r biomass_lm-solution}
 # summary() function shows R mis-interprets block as continuous
@@ -325,3 +327,123 @@ multiple unwanted variables. These are referred to as _Latin square_ designs
 for 2 variables, or _Latin hypercubes_ when there are lots of variables. Given
 the Star Trek/Star Wars name of the latter, you'll be glad we won't go into them
 in this module.
+
+## Fitting curves
+### Using 2 explanatory variables to fit curves
+Sometimes you may want to fit a curve rather than a straight line to your data,
+and with very simple datasets this can easily be done by creating a second
+explanatory variable derived from the original. This is easiest to explain by
+an example.
+
+You have undertaken an experiment to investigate the growth rate of common
+ryegrass _Lolium perenne_ in a glasshouse experiment with soils with different
+water content. Unsurprisingly, growth rate is poor in very dry soils, but it
+also declines again in very wet soils.
+
+![](www/lolium_perenne.jpeg)
+
+```{r lolium_scatter, echo=FALSE}
+gf_point(growth ~ water, data=lolium) %>% 
+  gf_labs(x = "Water content", y = "Lolium growth") %>% 
+  gf_theme(theme_classic())
+```
+
+Go ahead and fit a standard linear model. Check its `summary` table, and also look
+at the model diagnostics, in particular the QQ-plot, and how the model residuals
+change with predicted (fitted) growth rate.
+
+**Hints**: 
+* The exercise contains a data.frame called `lolium` with two columns, `growth`
+and `water`.
+* Use the `lm()` function to create your model, and `summary()` to display
+intercept, gradient, R-squared etc.
+* Use the `plot()` function of your model object; this will create 4 plots, but
+focus on the first (Residuals vs Fitted) and second (QQ plot)
+
+```{r lolium_straight_line-setup}
+rm(plant_growth)
+```
+```{r lolium_straight_line, exercise = TRUE, exercise.lines=15}
+
+```
+```{r lolium_straight_line-solution}
+# Create a simple linear model and check its summary statistics
+lolium_lm1 <- lm(growth ~ water, data=lolium)
+summary(lolium_lm1)
+
+# The plot function displays 4 plots. You are most interested in the first two
+plot(lolium_lm1, which = 1:2)
+```
+
+### Interpretation
+Whilst you have a significant model, that explains almost 40% of the variation
+based on the R-squared, it is obvious that something is wrong. The fitted vs
+residuals plot shows a steep curve, whereas ideally they should be scattered
+randomly. The standardised residuals in the QQ plot does not follow the 
+expected theoretical quantiles very well. These both suggest your model is poor.
+Finally, we can plot the predicted model line
+
+```{r lolium_straight_line_plot, echo=TRUE}
+# Display raw data and predicted line
+gf_point(growth ~ water, data=lolium) %>% 
+  gf_lm()
+```
+
+Hopefully you can see that a straight line is not very good for these data.
+
+### Fitting a quadratic
+A straight line regression model such as this can often be described as:
+
+$$ y = a + b.x + Error$$
+where
+$y$ = response variable (growth)
+$a$ = interecept of fitted line on y-axis (26.0 from your `summary()`)
+$b$ = the gradient of the line (0.194 from your `summary()`)
+$Error$ = unknown noise around your line.
+
+We can easily modify this equation by adding an additional x predictor that is
+simply the square (raised to 2) of the original x:
+
+$$y = a + b.x + c.x^{2} + Error$$
+An additional coefficient, $c$ is now calculated. This will typically be a very
+small value, in this example with a negative sign. This means that when water
+content is low, the $c$ value will do little. For example when water content is
+5%, water content-squared is only 25. However, the effect of water content
+goes up very sharply with high values: e.g. when water content is 75, water
+content-squared is 5625. This will have the effect of 'pulling' your fitted
+line back down.
+
+We can try it now. To tell R that you want to square a value in the `lm()` 
+function, you need to enclose it in the `I()` function, to indicate that this is
+what you intend to do. You can raise a variable to the power of 2 by using `^2`:
+
+
+```{r lolium_quadratic, echo=TRUE}
+# Original linear model
+lolium_lm1 <- lm(growth ~ water, data=lolium)
+
+# Include both water and water-squared
+lolium_lm2 <- lm(growth ~ water + I(water^2), data=lolium)
+summary(lolium_lm2)
+
+anova(lolium_lm1, lolium_lm2)
+```
+
+**Key things to note from above**
+
+* The R-squared has jumped to 87.6%
+* Three coefficients are produced, for the intercept, water, water-squared. As
+expected the water-squared coefficient is very small and negative (-0.008) but
+nevertheless highly significant (P = 0.000000295, report as P<0.001)
+* We have used the `anova()` function to compare the two linear models. This shows
+that the two models differ (F=70.48, P<0.001), with much lower residual sums of
+squares in the model containing water-squared.
+
+You can view the predicted line and see the improvement. Simply add the overall
+structure of your model (in `y ~ x + I(x^2)` syntax to the `gf_lm()` function:
+
+```{r fitted_line, echo=TRUE}
+gf_point(growth ~ water, data = lolium) %>% 
+  gf_lm(formula = y ~ x + I(x^2))
+```
+
