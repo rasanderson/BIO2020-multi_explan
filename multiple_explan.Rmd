@@ -578,9 +578,108 @@ interaction is significant, I would recommend that you keep all the main effects
 even ones, like `site`, that are non-significant.
 
 ## Interactive demonstration
-**If time** add a shiny demo showing what happens to ANOVA table with two sliders,
-one to adjust the amount of interaction (if any) and the other anything in the
-main effects.
+### Simulating main effects and interactions
+This interactive demonstration allows you to modify the relative importance of
+the two main effects from the rabbit example (sex and site) and the interaction
+term. Adjust the sliders to change the importance, and note the differences in
+the resulting graph, and ANOVA table from the linear model. **Note**: as a slight
+randomisation is used in changing the data, you will not obtain exactly the 
+same data points for any given setting of the sliders. However, they will be
+roughly similar.
+
+```{r, echo=FALSE}
+    # Application title
+    titlePanel("Understanding interactions")
+
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("sex_effects",
+                        "Difference in males & females (sex main effect)",
+                        min = 0,
+                        max = 10,
+                        value = 5),
+            sliderInput("site_effects",
+                        "Difference in uplands & lowlands (site main effect)",
+                        min = 0,
+                        max = 10,
+                        value = 5),
+            sliderInput("interaction_effects",
+                        "Interaction between site and sex",
+                        min = 0,
+                        max = 10,
+                        value = 5)
+        ),
+
+        mainPanel(
+           plotOutput("myplot"),
+           tableOutput("anova_table")
+        )
+    )
+```
+```{r, context="server"}
+    rabbits_data <- reactive({
+        nsample <- 10 
+        n.sex <- 2 # females and males
+        n.elev <- 2 # lowland and upland
+        n <- n.sex * nsample
+        
+        # Create factor levels
+        sex <- gl(n = n.sex, k = nsample, length = n)
+        elev <- gl(n = n.elev, k = nsample/n.elev, length = n)
+        
+        # Choose effects THESE CAN BE TWEAKED BASED ON SLIDERS
+        # Initial values from lm of rabbits with interaction
+        baseline <- 36.10  # Intercept; Females at lowland
+        sex.effects <- -21.46 * (input$sex_effects/5)
+        elev.effects <- -7.60 * (input$site_effects/5)
+        interaction.effects <- 14.92 * (input$interaction_effects/5)
+        all.effects <- c(baseline, elev.effects, sex.effects, interaction.effects)
+        
+        sigma1 <- 3.53
+        sigma2 <- 1.82
+        sigma3 <- 1.33
+        sigma4 <- 2.42
+        eps1 <- rnorm(n, 0, sigma1) # residuals
+        eps2 <- rnorm(n, 0, sigma2) # residuals
+        eps3 <- rnorm(n, 0, sigma3) # residuals
+        eps4 <- rnorm(n, 0, sigma4) # residuals
+        
+        X <- as.matrix(model.matrix(~ sex*elev))
+        
+        est_calcium <- as.numeric(as.matrix(X) %*% as.matrix(all.effects))
+        est_calcium[1:5] <- est_calcium[1:5] + eps1
+        est_calcium[6:10] <- est_calcium[6:10] + eps2
+        est_calcium[11:15] <- est_calcium[11:15] + eps3
+        est_calcium[16:20] <- est_calcium[16:20] + eps4
+        
+        elev_lab <- gl(2, 10, labels = c("lowland", "upland"))
+        sex_lab  <- gl(2,5,20, labels = c("Females", "Males"))
+        est_calcium_df <- data.frame(calcium=est_calcium, sex=sex_lab, site=elev_lab)
+        return(est_calcium_df)
+        
+    })
+
+    output$myplot <- renderPlot({
+      gf_point(calcium ~ site, colour = ~sex, data=rabbits_data()) %>% 
+        gf_line(calcium ~ site, colour= ~sex, group= ~sex, stat="summary", data=rabbits_data()) %>% 
+        gf_lims(y = c(-5, 40))
+    })
+    
+    output$anova_table <- renderTable({
+      data.frame(anova(lm(calcium ~ sex + site + sex:site, data=rabbits_data())))
+    },
+    include.rownames = TRUE)
+
+```
+
+### Key points to note:
+
+* When there is no interaction the lines are roughly parallel
+* Try setting the interaction to zero and one of the main effects to zero.
+* Note how the bigger a main effect, the more the males/females separate, or
+the more the difference between uplands and lowlands
+* When the interaction is high it is more challenging to interpret what is
+happening!!
 
 ## Aggh! Lost data
 ### Accidents happen
