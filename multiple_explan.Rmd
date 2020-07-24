@@ -274,9 +274,11 @@ plant_growth_lng <- pivot_longer(plant_growth,
                                  names_to = "fertiliser",
                                  values_to = "biomass")
 rm(plant_growth)
+rm(lolium)
+rm(plasma)
 ```
 ```{r biomass_lm, exercise=TRUE, exercise.setup = "biomass_lm_setup"}
-rm(lolium)
+
 ```
 ```{r biomass_lm-solution}
 # summary() function shows R mis-interprets block as continuous
@@ -582,10 +584,16 @@ even ones, like `site`, that are non-significant.
 This interactive demonstration allows you to modify the relative importance of
 the two main effects from the rabbit example (sex and site) and the interaction
 term. Adjust the sliders to change the importance, and note the differences in
-the resulting graph, and ANOVA table from the linear model. **Note**: as a slight
-randomisation is used in changing the data, you will not obtain exactly the 
-same data points for any given setting of the sliders. However, they will be
-roughly similar.
+the resulting graph, and ANOVA table from the linear model.
+
+**Note**
+
+* A slight randomisation is used in changing the data, therefore you will not
+obtain exactly the same results for any given setting of the sliders. However,
+they will be roughly similar.
+* I suggest you start by reducing the slider for the interaction term to zero,
+and adjust the two main effects. Once the interaction comes into force it can
+be more difficult to interpret.
 
 ```{r, echo=FALSE}
     # Application title
