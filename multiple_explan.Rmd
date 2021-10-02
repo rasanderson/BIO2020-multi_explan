@@ -778,7 +778,7 @@ known as "Sequential Sums of Squares" or "Type I SS". This means that each set o
 SS is calculated based on the results already found for previous predictors. This
 doesn't mess things up when you have balanced data, but causes lots of problems 
 with unbalanced data. Some other statistical packages use "Adjusted Sums of 
-Squares" or "Type III SS", which adjust for the order in which you enter the 
+Squares" or "Type II SS", which adjust for the order in which you enter the 
 explanatory variables, but at the cost of a loss of sensitivity to treatment
 effects. You can find a useful explanation, aimed at biologists, published in
  <a href="https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2656.2009.01634.x" target="_blank">this paper</a> 
@@ -790,7 +790,7 @@ effects. You can find a useful explanation, aimed at biologists, published in
  * Run the model with the explanatory variables in both orders. Often, as in the
  example we have just looked at, whilst the P-values differ, your overall biological
  conclusions are unchanged (the P-values are fairly similar).
- * If there are big differences, consider using Type III. You can enable these
+ * If there are big differences, consider using Type II. You can enable these
  in R by installing the `car` package via `install.packages("car")`, loading it 
  via the `library(car)` command, and then using the `Anova()` function (captial A)
  to look at the model. You can see this demonstrated below:
@@ -818,7 +818,7 @@ summary(plant_growth_lng)
 plant_growth_lm1 <- lm(biomass ~ fertiliser + block, data=plant_growth_lng)
 plant_growth_lm2 <- lm(biomass ~ block + fertiliser, data=plant_growth_lng)
 
-# Note capital A in Anova to access the Type III version.
+# Note capital A in Anova to access the Type II version.
 # Results now identical even with unbalanced data
 Anova(plant_growth_lm1)
 Anova(plant_growth_lm2)
